@@ -153,6 +153,9 @@ stages:
           i=$(( i + 1))
       done
 
+      curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py";
+      python3 get-pip.py;
+      pip3 install requests;
       echo "Running tests.py";
       #python3 tests.py;
     test_type: simple
