@@ -154,7 +154,7 @@ stages:
       done
 
       echo "Running tests.py";
-      python3 tests.py;
+      #python3 tests.py;
     test_type: simple
 - name: IMPORT-PROD
   inputs:
