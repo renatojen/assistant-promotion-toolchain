@@ -157,7 +157,7 @@ stages:
       python3 get-pip.py;
       pip3 install requests;
       echo "Running tests.py";
-      #python3 tests.py;
+      python3 tests.py;
     test_type: simple
 - name: IMPORT-PROD
   inputs:
