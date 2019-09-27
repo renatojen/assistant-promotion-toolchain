@@ -29,7 +29,6 @@ stages:
 
       curl -u "apikey":"$API_KEY_DEV" "$API_URL/v1/workspaces?version=2018-09-20" > workspaces.json
       export SOURCE_WORKSPACE_ID=$(jq -r ".workspaces[] | select(.name == \"${WORKSPACE_NAME}\") | .workspace_id" workspaces.json)
-      export API_KEY_DEV2=$API_KEY_DEV
 
       echo "Source workspace ID is $SOURCE_WORKSPACE_ID"
 

@@ -47,19 +47,19 @@
 	        "key": "api-url"
         },
         {
-            "type": "password",
+            "type": "string",
             "readonly": false,
             "title": "API Key da instancia de DESENVOLVIMENTO",
             "key": "api-key-dev"
         },
         {
-	        "type": "password",
+	        "type": "string",
 	        "readonly": false,
 	        "title": "API Key da instancia de HOMOLOGACAO" ,
 	        "key": "api-key-hom"
         },
         {
-	        "type": "password",
+	        "type": "string",
 	        "readonly": false,
 	        "title": "API Key da instancia de PRODUCAO" ,
 	        "key": "api-key-prd"
