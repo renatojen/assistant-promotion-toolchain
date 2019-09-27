@@ -53,7 +53,7 @@ stages:
     type: tester
     curatedDockerImage: default
     script: "#!/bin/bash\ncurl -u \"apikey\":\"$API_KEY_DEV\" \"$API_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\n\
-    export SOURCE_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}\\\") | .workspace_id\" workspaces.json)\n\necho ${SOURCE_WORKSPACE_ID}\n\n\
+    export SOURCE_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}\\\") | .workspace_id\" workspaces.json)\n\n\
     echo '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\n\
     import sys\n\nwksp_id = getenv(\"SOURCE_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY_DEV\", \"\")\nuser = \"apikey\"\n\n\
     headers = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n\
@@ -108,7 +108,7 @@ stages:
       \ workspaces.json)\n\n# Replace template name into JSON\nsed -i -e 's,'\"${WORKSPACE_NAME},${WORKSPACE_NAME}_PROD\"\
       ',' export.json\necho \"Target workspace ID is $TARGET_WORKSPACE_ID\"\necho\
       \ \"Importing workspace $TARGET_WORKSPACE_ID...\"\n    \ncurl -H \"Content-Type:\
-      \ application/json\" -X POST -d @export.json -u \"apikey\":\"$API_KEY_PROD\"\
+      \ application/json\" -X POST -d @export.json -u \"apikey\":\"$API_KEY_PRD\"\
       \ \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
     test_type: simple
 hooks:
