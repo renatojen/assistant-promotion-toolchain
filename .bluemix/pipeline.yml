@@ -52,8 +52,8 @@ stages:
   - name: Test
     type: tester
     curatedDockerImage: default
-    script: "#!/bin/bash\necho ${API_KEY_DEV}\n curl -u \"apikey\":\"$API_KEY_DEV\" \"$API_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\n\
-    export SOURCE_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \"${WORKSPACE_NAME}\") | .workspace_id\" workspaces.json)\n\necho ${SOURCE_WORKSPACE_ID}\n\n\
+    script: "#!/bin/bash\ncurl -u \"apikey\":\"$API_KEY_DEV\" \"$API_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\n\
+    export SOURCE_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}\\\") | .workspace_id\" workspaces.json)\n\necho ${SOURCE_WORKSPACE_ID}\n\n\
     echo '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\n\
     import sys\n\nwksp_id = getenv(\"SOURCE_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY_DEV\", \"\")\nuser = \"apikey\"\n\n\
     headers = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n\
