@@ -6,85 +6,64 @@
     "type": "object",
     "properties": {
         "workspace-name": {
-            "description": "Nome da workspace",
-            "type": "string"
-        }, 
-        "api-key-dev": {
-            "description": "API Key do ambiente origem",
+            "description": "Nome do workspace",
             "type": "string"
         },
         "api-url": {
-            "description": "URL do servico Watson origem",
+            "description": "URL do API do Watson Assistant",
             "type": "string"
         },
-        "api-keys": {
-            "description": "API Keys das instancias de Producao (entre espacos)",
+        "api-key-dev": {
+            "description": "API Key da instancia de DESENVOLVIMENTO",
             "type": "string"
         },
-        "api-base-urls": {
-            "description": "URLs das instancias de Producao (entre espacos)",
+        "api-key-hom": {
+            "description": "API Key da instancia de HOMOLOGACAO",
             "type": "string"
         },
-        "api-keys-hom": {
-            "description": "API Keys das instancias de Homologacao (entre espacos)",
-            "type": "string"
-        },
-        "api-base-urls-hom": {
-            "description": "URLs das instancias de Homologacao (entre espacos)",
+        "api-key-prd": {
+            "description": "API Key da instancia de PRODUCAO",
             "type": "string"
         }
     },
     "required": [
-        "api-key-dev",
-        "api-url",
-        "api-keys",
-        "api-base-urls",
         "workspace-name",
-        "api-keys-hom",
-        "api-base-urls-hom"
+        "api-url",
+        "api-key-dev",
+        "api-key-hom",
+        "api-key-prd"
     ],
     "form": [
         {
             "type": "string",
             "readonly": false,
-            "title": "Nome da workspace",
+            "title": "Nome do workspace",
             "key": "workspace-name"
         },  
         {
 	        "type": "string",
 	        "readonly": false,
-	        "title": "URL do servico Watson origem" ,
+	        "title": "URL do API do Watson Assistant",
+            "text": "https://gateway.watsonplatform.net/assistant/api",
 	        "key": "api-url"
         },
         {
             "type": "password",
             "readonly": false,
-            "title": "API Key do ambiente origem",
+            "title": "API Key da instancia de DESENVOLVIMENTO",
             "key": "api-key-dev"
         },
         {
-	        "type": "string",
+	        "type": "password",
 	        "readonly": false,
-	        "title": "URLs das instancias de Homologacao (entre espacos)" ,
-	        "key": "api-base-urls-hom"
+	        "title": "API Key da instancia de HOMOLOGACAO" ,
+	        "key": "api-key-hom"
         },
         {
 	        "type": "password",
 	        "readonly": false,
-	        "title": "API Keys das instancias de Homologacao (entre espacos)" ,
-	        "key": "api-keys-hom"
-        },
-        {
-	        "type": "string",
-	        "readonly": false,
-	        "title": "URLs das instancias de Producao (entre espacos)" ,
-	        "key": "api-base-urls"
-        },
-        {
-	        "type": "password",
-	        "readonly": false,
-	        "title": "API Keys das instancias de Producao (entre espacos)" ,
-	        "key": "api-keys"
+	        "title": "API Key da instancia de PRODUCAO" ,
+	        "key": "api-key-prd"
         }
        
     ]

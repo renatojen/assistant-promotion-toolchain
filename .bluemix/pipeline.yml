@@ -1,47 +1,29 @@
 ---
+defaultBaseImageVersion: '1.0'
 properties:
 - name: WORKSPACE_NAME
   value: ${WORKSPACE_NAME}
+  type: text
+- name: API_URL
+  value: ${API_URL}
+  type: text
+- name: API_KEY_DEV
+  type: secure
+- name: API_KEY_HOM
+  type: secure
+- name: API_KEY_PRD
+  type: secure
 stages:
-- name: Pull
-  inputs:
-  - service: repo
-    type: git
-    branch: master
-    dir_name: null
-  triggers:
-  - type: git
-    events: '{"push":true,"pull_request":false,"pull_request_closed":false}'
+- name: Get DEV Workspace
+  worker: Worker[name=null,type=null,id=null]
   permission:
-    execute: TOOLCHAIN_ADMINS
+    execute: TOOLCHAIN_MEMBERS
   jobs:
-  - name: Pull
+  - name: Version
     type: builder
     curatedDockerImage: default
     artifact_dir: ''
-- name: EXPORT
-  inputs:
-  - type: job
-    stage: Pull
-    job: Pull
-    dir_name: null
-  triggers:
-  - type: stage
-  permission:
-    execute: TOOLCHAIN_ADMINS
-  properties: 
-  - name: API_URL
-    value: ${API_URL}
-  - name: API_KEY_DEV
-    value: ${API_KEY_DEV}
-    type: secure
-  jobs:
-  - name: ExportWorkspace
-    type: builder
-    fail_stage: true
-    artifact_dir: output
     build_type: shell
-    enable_tests: false
     script: |
       #!/bin/bash
       echo "Looking for workspace with name ${WORKSPACE_NAME}"
@@ -54,155 +36,71 @@ stages:
       echo "Exporting workspace $SOURCE_WORKSPACE_ID..."
 
       curl -u "apikey":"$API_KEY_DEV" "$API_URL/v1/workspaces/$SOURCE_WORKSPACE_ID?version=2018-09-20&export=true" > export.json
-      mkdir -p output
-
-      mv export.json ./output/
-- name: IMPORT-HOM
-  inputs:
-  - type: job
-    stage: EXPORT
-    job: ExportWorkspace 
-  properties:
-  - name: API_BASE_URLS
-    value: ${API_BASE_URLS_HOM}
-  - name: API_KEYS
-    value: ${API_KEYS_HOM}
-    type: secure
-  jobs:    
-  - name: ImportWorkspace
-    type: tester
-    fail_stage: true
-    build_type: shell
-    enable_tests: false
-    script: |
-      #!/bin/bash
-      declare -a API_KEY_TRG
-      j=0
-      for API_KEY in $API_KEYS
-      do
-         API_KEY_TRG[j]=$API_KEY
-         j=$(( j + 1 ))
-      done
-
-      API_KEY_TRG=($API_KEYS)
-      i=0
-      for API_BASE_URL in $API_BASE_URLS
-      do
-          echo "Looking for workspace with name ${WORKSPACE_NAME}_HOMOL at $API_BASE_URL" 
-          curl -u "apikey":"${API_KEY_TRG[$i]}" "$API_BASE_URL/v1/workspaces?version=2018-09-20" > workspaces.json
-          export TARGET_WORKSPACE_ID=$(jq -r ".workspaces[] | select(.name == \"${WORKSPACE_NAME}_HOMOL\") | .workspace_id" workspaces.json)
-
-          # Replace template name into JSON
-          sed -i -e 's,'"${WORKSPACE_NAME},${WORKSPACE_NAME}_HOMOL"',g' export.json
-          echo "Target workspace ID is $TARGET_WORKSPACE_ID"
-          echo "Importing workspace $TARGET_WORKSPACE_ID..."
-          
-          curl -H "Content-Type: application/json" -X POST -d @export.json -u "apikey":"${API_KEY_TRG[$i]}" "$API_BASE_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20"
-          i=$(( i + 1))
-      done
-      echo "Finished deploy!"
-    test_type: simple
 - name: Tests
+  worker: Worker[name=null,type=null,id=null]
   inputs:
   - type: job
-    stage: Pull
-    job: Pull
+    stage: Get DEV Workspace
+    job: Version
     dir_name: null
-  properties:
-  - name: API_BASE_URLS
-    value: ${API_BASE_URLS_HOM}
-  - name: API_KEYS
-    value: ${API_KEYS_HOM}
-    type: secure
   triggers:
   - type: stage
   permission:
-    execute: TOOLCHAIN_ADMINS
+    execute: TOOLCHAIN_MEMBERS
   jobs:
   - name: Test
     type: tester
     curatedDockerImage: default
-    script: |
-      #!/bin/bash
-      export PYTHONPATH=~/.local/lib/;
-      python3 -V;
-      echo $PYTHONPATH;
-      mkdir -p $PYTHONPATH;
-      export LC_ALL=en_US.UTF-8
-      export LANG=en_US.UTF-8
-
-      uname -na;
-      lsb_release -a;
-      declare -a API_KEY_TRG
-      j=0
-      for API_KEY in $API_KEYS
-      do
-         API_KEY_TRG[j]=$API_KEY
-         j=$(( j + 1 ))
-      done
-
-      API_KEY_TRG=($API_KEYS)
-      i=0
-      for API_BASE_URL in $API_BASE_URLS
-      do
-          echo "Looking for workspace with name ${WORKSPACE_NAME}_HOMOL at $API_BASE_URL" 
-          curl -u "apikey":"${API_KEY_TRG[$i]}" "$API_BASE_URL/v1/workspaces?version=2018-09-20" > workspaces.json
-          export TARGET_WORKSPACE_ID=$(jq -r ".workspaces[] | select(.name == \"${WORKSPACE_NAME}_HOMOL\") | .workspace_id" workspaces.json)
-          export API_KEY="${API_KEY_TRG[$i]}"
-
-          i=$(( i + 1))
-      done
-
-      curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py";
-      python3 get-pip.py;
-      pip3 install requests;
-      echo "Running tests.py";
-      python3 tests.py;
+    script: "#!/bin/bash\n\necho '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\nimport sys\n\nwksp_id = getenv(\"TARGET_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY\", \"\")\nuser = \"apikey\"\n\nheaders = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n#initialization\ndef init():\n  if wksp_id == \"\" or apikey == \"\":\n    print(ts() + \" - ERROR: Initialization error\")\n    sys.exit(1)\n\ndef send_message():\n  params = (\n    (\"version\", \"2019-02-28\"),\n  )\n  print(ts() + \" - Running test call\")\n  data = {\"input\": {\"text\":  \"\" }, \"context\": {}}\n  data = json.dumps(data)\n  try:\n    r = requests.post(\"https://gateway.watsonplatform.net/assistant/api/v1/workspaces/\" + wksp_id + \"/message\", params=params, headers=headers, data=data, auth=(user, apikey))\n  except:\n    print(ts() + \" - ERROR: Request failed.\")\n    sys.exit(2)\n  if r.status_code != 200:\n    print(ts() + \" - ERROR: Request returned code: \" + str(r.status_code))\n    sys.exit(3)\n  \n###\n\ninit()\nsend_message()\n\nprint(ts() + \" - Test sucessful!\")\n' > tests.py\n\nexport PYTHONPATH=~/.local/lib/;\npython3 -V;\necho $PYTHONPATH;\nmkdir -p $PYTHONPATH;\nexport LC_ALL=en_US.UTF-8\nexport LANG=en_US.UTF-8\n\nuname -na;\nlsb_release -a;\ndeclare -a API_KEY_TRG\nj=0\nfor API_KEY in $API_KEYS\ndo\n   API_KEY_TRG[j]=$API_KEY\n   j=$(( j + 1 ))\ndone\n\nAPI_KEY_TRG=($API_KEYS)\ni=0\nfor API_BASE_URL in $API_BASE_URLS\ndo\n    echo \"Looking for workspace with name ${WORKSPACE_NAME}_HOMOL at $API_BASE_URL\" \n    curl -u \"apikey\":\"${API_KEY_TRG[$i]}\" \"$API_BASE_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\n    export TARGET_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}_HOMOL\\\") | .workspace_id\" workspaces.json)\n    export API_KEY=\"${API_KEY_TRG[$i]}\"\n\n    i=$(( i + 1))\ndone\n\ncurl \"https://bootstrap.pypa.io/get-pip.py\" -o \"get-pip.py\";\npython3 get-pip.py;\npip3 install requests;\necho \"Running tests.py\";\npython3 tests.py;\n"
     test_type: simple
-- name: IMPORT-PROD
+- name: Homol
+  worker: Worker[name=null,type=null,id=null]
   inputs:
   - type: job
-    stage: EXPORT
-    job: ExportWorkspace
-  triggers:
-  - type: stage
-    enabled: false
-  properties:
-  - name: API_BASE_URLS
-    value: ${API_BASE_URLS}
-  - name: API_KEYS
-    value: ${API_KEYS}
-    type: secure
-  jobs:    
-  - name: ImportWorkspace
+    stage: Get DEV Workspace
+    job: Version
+    dir_name: null
+  permission:
+    execute: TOOLCHAIN_MEMBERS
+  jobs:
+  - name: Deploy
     type: tester
-    fail_stage: true
-    build_type: shell
-    enable_tests: false
-    script: |
-      #!/bin/bash
-      declare -a API_KEY_TRG
-      j=0
-      for API_KEY in $API_KEYS
-      do
-         API_KEY_TRG[j]=$API_KEY
-         j=$(( j + 1 ))
-      done
-
-      API_KEY_TRG=($API_KEYS)
-      i=0
-      for API_BASE_URL in $API_BASE_URLS
-      do
-          echo "Looking for workspace with name ${WORKSPACE_NAME}_PROD at $API_BASE_URL" 
-          curl -u "apikey":"${API_KEY_TRG[$i]}" "$API_BASE_URL/v1/workspaces?version=2018-09-20" > workspaces.json
-          export TARGET_WORKSPACE_ID=$(jq -r ".workspaces[] | select(.name == \"${WORKSPACE_NAME}_PROD\") | .workspace_id" workspaces.json)
-          
-          # Replace template name into JSON
-          sed -i -e 's,'"${WORKSPACE_NAME},${WORKSPACE_NAME}_PROD"',g' export.json
-          echo "Target workspace ID is $TARGET_WORKSPACE_ID"
-          echo "Importing workspace $TARGET_WORKSPACE_ID..."
-          
-          curl -H "Content-Type: application/json" -X POST -d @export.json -u "apikey":"${API_KEY_TRG[$i]}" "$API_BASE_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20"
-          i=$(( i + 1))
-      done
-      echo "Finished deploy!"
+    curatedDockerImage: default
+    script: "#!/bin/bash\necho \"Looking for workspace with name ${WORKSPACE_NAME}_HOMOL\
+      \ at $API_URL\" \ncurl -u \"apikey\":\"$API_KEY_HOM\" \"$API_URL/v1/workspaces?version=2018-09-20\"\
+      \ > workspaces.json\nexport TARGET_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name\
+      \ == \\\"${WORKSPACE_NAME}_HOMOL\\\") | .workspace_id\" workspaces.json)\n\n\
+      # Replace template name into JSON\nsed -i -e 's,'\"${WORKSPACE_NAME},${WORKSPACE_NAME}_HOMOL\"\
+      ',' export.json\necho \"Target workspace ID is $TARGET_WORKSPACE_ID\"\necho\
+      \ \"Importing workspace $TARGET_WORKSPACE_ID...\"\n    \ncurl -H \"Content-Type:\
+      \ application/json\" -X POST -d @export.json -u \"apikey\":\"$API_KEY_HOM\"\
+      \ \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
+    test_type: simple
+- name: Prod
+  worker: Worker[name=null,type=null,id=null]
+  inputs:
+  - type: job
+    stage: Get DEV Workspace
+    job: Version
+    dir_name: null
+  permission:
+    execute: TOOLCHAIN_MEMBERS
+  jobs:
+  - name: Deploy
+    type: tester
+    curatedDockerImage: default
+    script: "#!/bin/bash\necho \"Looking for workspace\
+      \ with name ${WORKSPACE_NAME}_PROD at $API_URL\" \ncurl -u \"apikey\":\"$API_KEY_PROD\"\
+      \ \"$API_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\nexport TARGET_WORKSPACE_ID=$(jq\
+      \ -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}_PROD\\\") | .workspace_id\"\
+      \ workspaces.json)\n\n# Replace template name into JSON\nsed -i -e 's,'\"${WORKSPACE_NAME},${WORKSPACE_NAME}_PROD\"\
+      ',' export.json\necho \"Target workspace ID is $TARGET_WORKSPACE_ID\"\necho\
+      \ \"Importing workspace $TARGET_WORKSPACE_ID...\"\n    \ncurl -H \"Content-Type:\
+      \ application/json\" -X POST -d @export.json -u \"apikey\":\"$API_KEY_PROD\"\
+      \ \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
+    test_type: simple
+hooks:
+- enabled: true
+  label: null
+  ssl_enabled: true
+  url: https://devops-api.us-south.devops.cloud.ibm.com/v1/messaging/webhook/publish
