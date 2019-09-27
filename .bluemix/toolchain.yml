@@ -18,7 +18,6 @@ services:
     parameters:
       name: 'assistant-promotion-pipeline'
       services:
-        - repo
       ui-pipeline: true
       configuration:
         content:

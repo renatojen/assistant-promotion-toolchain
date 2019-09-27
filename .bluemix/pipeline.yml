@@ -51,7 +51,18 @@ stages:
   - name: Test
     type: tester
     curatedDockerImage: default
-    script: "#!/bin/bash\n\necho '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\nimport sys\n\nwksp_id = getenv(\"TARGET_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY\", \"\")\nuser = \"apikey\"\n\nheaders = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n#initialization\ndef init():\n  if wksp_id == \"\" or apikey == \"\":\n    print(ts() + \" - ERROR: Initialization error\")\n    sys.exit(1)\n\ndef send_message():\n  params = (\n    (\"version\", \"2019-02-28\"),\n  )\n  print(ts() + \" - Running test call\")\n  data = {\"input\": {\"text\":  \"\" }, \"context\": {}}\n  data = json.dumps(data)\n  try:\n    r = requests.post(\"https://gateway.watsonplatform.net/assistant/api/v1/workspaces/\" + wksp_id + \"/message\", params=params, headers=headers, data=data, auth=(user, apikey))\n  except:\n    print(ts() + \" - ERROR: Request failed.\")\n    sys.exit(2)\n  if r.status_code != 200:\n    print(ts() + \" - ERROR: Request returned code: \" + str(r.status_code))\n    sys.exit(3)\n  \n###\n\ninit()\nsend_message()\n\nprint(ts() + \" - Test sucessful!\")\n' > tests.py\n\nexport PYTHONPATH=~/.local/lib/;\npython3 -V;\necho $PYTHONPATH;\nmkdir -p $PYTHONPATH;\nexport LC_ALL=en_US.UTF-8\nexport LANG=en_US.UTF-8\n\nuname -na;\nlsb_release -a;\ndeclare -a API_KEY_TRG\nj=0\nfor API_KEY in $API_KEYS\ndo\n   API_KEY_TRG[j]=$API_KEY\n   j=$(( j + 1 ))\ndone\n\nAPI_KEY_TRG=($API_KEYS)\ni=0\nfor API_BASE_URL in $API_BASE_URLS\ndo\n    echo \"Looking for workspace with name ${WORKSPACE_NAME}_HOMOL at $API_BASE_URL\" \n    curl -u \"apikey\":\"${API_KEY_TRG[$i]}\" \"$API_BASE_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\n    export TARGET_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}_HOMOL\\\") | .workspace_id\" workspaces.json)\n    export API_KEY=\"${API_KEY_TRG[$i]}\"\n\n    i=$(( i + 1))\ndone\n\ncurl \"https://bootstrap.pypa.io/get-pip.py\" -o \"get-pip.py\";\npython3 get-pip.py;\npip3 install requests;\necho \"Running tests.py\";\npython3 tests.py;\n"
+    script: "#!/bin/bash\n\necho '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\n\
+    \ import sys\n\nwksp_id = getenv(\"SOURCE_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY_DEV\", \"\")\nuser = \"apikey\"\n\n\
+    \ headers = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n\
+    \ #initialization\ndef init():\n  if wksp_id == \"\" or apikey == \"\":\n    print(ts() + \" - ERROR: Initialization error\")\n\
+    \     sys.exit(1)\n\ndef send_message():\n  params = (\n    (\"version\", \"2019-02-28\"),\n  )\n  print(ts() + \" - Running test call\")\n\
+    \   data = {\"input\": {\"text\":  \"\" }, \"context\": {}}\n  data = json.dumps(data)\n  try:\n\
+    \     r = requests.post(\"https://gateway.watsonplatform.net/assistant/api/v1/workspaces/\" + wksp_id + \"/message\", params=params, headers=headers, data=data, auth=(user, apikey))\n\
+    \   except:\n    print(ts() + \" - ERROR: Request failed.\")\n    sys.exit(2)\n  if r.status_code != 200:\n    print(ts() + \" - ERROR: Request returned code: \" + str(r.status_code))\n\
+    \     sys.exit(3)\n  \n###\n\ninit()\nsend_message()\n\nprint(ts() + \" - Test sucessful!\")\n' > tests.py\n\n\
+    \ export PYTHONPATH=~/.local/lib/;\npython3 -V;\necho $PYTHONPATH;\nmkdir -p $PYTHONPATH;\nexport LC_ALL=en_US.UTF-8\nexport LANG=en_US.UTF-8\n\nuname -na;\nlsb_release -a;\n\ 
+    \ curl \"https://bootstrap.pypa.io/get-pip.py\" -o \"get-pip.py\";\npython3 get-pip.py;\npip3 install requests;\n\
+    \ echo \"Running tests.py\";\npython3 tests.py;\n"
     test_type: simple
 - name: Homol
   worker: Worker[name=null,type=null,id=null]
