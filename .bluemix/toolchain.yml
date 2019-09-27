@@ -6,6 +6,10 @@ template:
   required:
     - sample-build
   info:
+    git url: >-
+      [https://github.com/renatojen/assistant-promotion-toolchain](https://github.com/renatojen/assistant-promotion-toolchain)
+    git branch: >-
+      [master](https://github.com/renatojen/assistant-promotion-toolchain)
 toolchain:
   name: 'assistant-promotion-toolchain-{{timestamp}}'
 services:
