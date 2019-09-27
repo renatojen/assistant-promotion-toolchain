@@ -8,10 +8,13 @@ properties:
   value: ${API_URL}
   type: text
 - name: API_KEY_DEV
+  value: ${API_KEY_DEV}
   type: text
 - name: API_KEY_HOM
+  value: ${API_KEY_HOM}
   type: text
 - name: API_KEY_PRD
+  value: ${API_KEY_PRD}
   type: text
 stages:
 - name: Get DEV Workspace
@@ -49,7 +52,9 @@ stages:
   - name: Test
     type: tester
     curatedDockerImage: default
-    script: "#!/bin/bash\n\necho '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\n\
+    script: "#!/bin/bash\necho ${API_KEY_DEV}\n curl -u \"apikey\":\"$API_KEY_DEV\" \"$API_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\n\
+    export SOURCE_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name == \"${WORKSPACE_NAME}\") | .workspace_id\" workspaces.json)\n\necho ${SOURCE_WORKSPACE_ID}\n\n\
+    echo '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\n\
     import sys\n\nwksp_id = getenv(\"SOURCE_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY_DEV\", \"\")\nuser = \"apikey\"\n\n\
     headers = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n\
     #initialization\ndef init():\n  if wksp_id == \"\" or apikey == \"\":\n    print(ts() + \" - ERROR: Initialization error\")\n    print(ts() + \" - wksp_id: \" + wksp_id)\n    print(ts() + \" - apikey: \" + apikey)\n\
