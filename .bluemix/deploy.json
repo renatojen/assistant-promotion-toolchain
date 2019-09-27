@@ -10,8 +10,7 @@
             "type": "string"
         },
         "api-url": {
-            "description": "URL do API do Watson Assistant",
-            "value": "https://gateway.watsonplatform.net/assistant/api",
+            "description": "https://gateway.watsonplatform.net/assistant/api",
             "type": "string"
         },
         "api-key-dev": {
@@ -44,8 +43,7 @@
         {
 	        "type": "string",
 	        "readonly": false,
-	        "title": "URL do API do Watson Assistant",
-            "value": "https://gateway.watsonplatform.net/assistant/api",
+	        "title": "URL da API do Watson Assistant",
 	        "key": "api-url"
         },
         {
