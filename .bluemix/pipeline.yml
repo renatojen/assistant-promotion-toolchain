@@ -50,17 +50,17 @@ stages:
     type: tester
     curatedDockerImage: default
     script: "#!/bin/bash\n\necho '\nimport json\nfrom os import getenv\nfrom datetime import datetime\nimport requests\n\
-    \ import sys\n\nwksp_id = getenv(\"SOURCE_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY_DEV\", \"\")\nuser = \"apikey\"\n\n\
-    \ headers = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n\
-    \ #initialization\ndef init():\n  if wksp_id == \"\" or apikey == \"\":\n    print(ts() + \" - ERROR: Initialization error\")\n\
-    \     sys.exit(1)\n\ndef send_message():\n  params = (\n    (\"version\", \"2019-02-28\"),\n  )\n  print(ts() + \" - Running test call\")\n\
-    \   data = {\"input\": {\"text\":  \"\" }, \"context\": {}}\n  data = json.dumps(data)\n  try:\n\
-    \     r = requests.post(\"https://gateway.watsonplatform.net/assistant/api/v1/workspaces/\" + wksp_id + \"/message\", params=params, headers=headers, data=data, auth=(user, apikey))\n\
-    \   except:\n    print(ts() + \" - ERROR: Request failed.\")\n    sys.exit(2)\n  if r.status_code != 200:\n    print(ts() + \" - ERROR: Request returned code: \" + str(r.status_code))\n\
-    \     sys.exit(3)\n  \n###\n\ninit()\nsend_message()\n\nprint(ts() + \" - Test sucessful!\")\n' > tests.py\n\n\
-    \ export PYTHONPATH=~/.local/lib/;\npython3 -V;\necho $PYTHONPATH;\nmkdir -p $PYTHONPATH;\nexport LC_ALL=en_US.UTF-8\nexport LANG=en_US.UTF-8\n\nuname -na;\nlsb_release -a;\n\ 
-    \ curl \"https://bootstrap.pypa.io/get-pip.py\" -o \"get-pip.py\";\npython3 get-pip.py;\npip3 install requests;\n\
-    \ echo \"Running tests.py\";\npython3 tests.py;\n"
+    import sys\n\nwksp_id = getenv(\"SOURCE_WORKSPACE_ID\", \"\")\napikey = getenv(\"API_KEY_DEV\", \"\")\nuser = \"apikey\"\n\n\
+    headers = {\"Content-type\": \"application/json\", \"Accept\": \"text/plain\"}\n\ndef ts():\n  return \"{:%Y.%m.%d-%H.%M.%S}\".format(datetime.now())\n\n\
+    #initialization\ndef init():\n  if wksp_id == \"\" or apikey == \"\":\n    print(ts() + \" - ERROR: Initialization error\")\n\
+        sys.exit(1)\n\ndef send_message():\n  params = (\n    (\"version\", \"2019-02-28\"),\n  )\n  print(ts() + \" - Running test call\")\n\
+      data = {\"input\": {\"text\":  \"\" }, \"context\": {}}\n  data = json.dumps(data)\n  try:\n\
+        r = requests.post(\"https://gateway.watsonplatform.net/assistant/api/v1/workspaces/\" + wksp_id + \"/message\", params=params, headers=headers, data=data, auth=(user, apikey))\n\
+      except:\n    print(ts() + \" - ERROR: Request failed.\")\n    sys.exit(2)\n  if r.status_code != 200:\n    print(ts() + \" - ERROR: Request returned code: \" + str(r.status_code))\n\
+        sys.exit(3)\n  \n###\n\ninit()\nsend_message()\n\nprint(ts() + \" - Test sucessful!\")\n' > tests.py\n\n\
+    export PYTHONPATH=~/.local/lib/;\npython3 -V;\necho $PYTHONPATH;\nmkdir -p $PYTHONPATH;\nexport LC_ALL=en_US.UTF-8\nexport LANG=en_US.UTF-8\n\nuname -na;\nlsb_release -a;\n\ 
+    curl \"https://bootstrap.pypa.io/get-pip.py\" -o \"get-pip.py\";\npython3 get-pip.py --user;\npip install requests;\n\
+    echo \"Running tests.py\";\npython3 tests.py;\n"
     test_type: simple
 - name: Homol
   inputs:
