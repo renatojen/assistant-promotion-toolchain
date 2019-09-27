@@ -15,7 +15,6 @@ properties:
   type: secure
 stages:
 - name: Get DEV Workspace
-  worker: Worker[name=null,type=null,id=null]
   permission:
     execute: TOOLCHAIN_MEMBERS
   jobs:
@@ -37,7 +36,6 @@ stages:
 
       curl -u "apikey":"$API_KEY_DEV" "$API_URL/v1/workspaces/$SOURCE_WORKSPACE_ID?version=2018-09-20&export=true" > export.json
 - name: Tests
-  worker: Worker[name=null,type=null,id=null]
   inputs:
   - type: job
     stage: Get DEV Workspace
@@ -65,7 +63,6 @@ stages:
     \ echo \"Running tests.py\";\npython3 tests.py;\n"
     test_type: simple
 - name: Homol
-  worker: Worker[name=null,type=null,id=null]
   inputs:
   - type: job
     stage: Get DEV Workspace
@@ -88,7 +85,6 @@ stages:
       \ \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
     test_type: simple
 - name: Prod
-  worker: Worker[name=null,type=null,id=null]
   inputs:
   - type: job
     stage: Get DEV Workspace
