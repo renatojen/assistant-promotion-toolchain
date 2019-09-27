@@ -8,12 +8,10 @@ properties:
   value: ${API_URL}
   type: text
 - name: API_KEY_DEV
-  type: secure
+  type: text
 - name: API_KEY_HOM
-  type: secure
+  type: text
 - name: API_KEY_PRD
-  type: secure
-- name: API_KEY_DEV2
   type: text
 stages:
 - name: Get DEV Workspace
