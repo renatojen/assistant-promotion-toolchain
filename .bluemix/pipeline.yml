@@ -16,6 +16,12 @@ properties:
 - name: API_KEY_PRD
   value: ${API_KEY_PRD}
   type: text
+- name: API_URL_REG2
+  value: ${API_URL_REG2}
+  type: text
+- name: API_KEY_PRD_REG2
+  value: ${API_KEY_PRD_REG2}
+  type: text
 stages:
 - name: Get DEV Workspace
   permission:
