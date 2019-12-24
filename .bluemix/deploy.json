@@ -24,6 +24,14 @@
         "api-key-prd": {
             "description": "API Key da instancia de PRODUCAO",
             "type": "string"
+        },
+        "api-url-reg2": {
+            "description": "https://gateway-wdc.watsonplatform.net/assistant/api",
+            "type": "string"
+        },
+        "api-key-prd-reg2": {
+            "description": "API Key da instancia de PRODUCAO (REGIÃO 2)",
+            "type": "string"
         }
     },
     "required": [
@@ -63,7 +71,19 @@
 	        "readonly": false,
 	        "title": "API Key da instancia de PRODUCAO" ,
 	        "key": "api-key-prd"
-        }
+        },
+        {
+            "type": "string",
+            "readonly": false,
+            "title": "URL da API do Watson Assistant (REGIÃO 2)",
+            "key": "api-url"
+        },
+        {
+            "type": "password",
+            "readonly": false,
+            "title": "API Key da instancia de PRODUCAO (REGIÃO 2)" ,
+            "key": "api-key-prd-reg2"
+        },
        
     ]
 }

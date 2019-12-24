@@ -23,11 +23,13 @@ services:
         content:
           $text: pipeline.yml
         env:
-          WORKSPACE_NAME: '{{form.pipeline.parameters.workspace-name}}' 
-          API_URL:        '{{form.pipeline.parameters.api-url}}'
-          API_KEY_DEV:    '{{form.pipeline.parameters.api-key-dev}}'
-          API_KEY_HOM:    '{{form.pipeline.parameters.api-key-hom}}'
-          API_KEY_PRD:    '{{form.pipeline.parameters.api-key-prd}}'
+          WORKSPACE_NAME:   '{{form.pipeline.parameters.workspace-name}}' 
+          API_URL:          '{{form.pipeline.parameters.api-url}}'
+          API_KEY_DEV:      '{{form.pipeline.parameters.api-key-dev}}'
+          API_KEY_HOM:      '{{form.pipeline.parameters.api-key-hom}}'
+          API_KEY_PRD:      '{{form.pipeline.parameters.api-key-prd}}'
+          API_URL_REG2:     '{{form.pipeline.parameters.api-url-reg2}}'
+          API_KEY_PRD_REG2: '{{form.pipeline.parameters.api-key-prd-reg2}}'
         execute: false
 form:
   pipeline:
