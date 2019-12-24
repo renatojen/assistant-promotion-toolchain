@@ -90,10 +90,11 @@ stages:
       \ > workspaces.json\nexport TARGET_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name\
       \ == \\\"${WORKSPACE_NAME}_HOMOL\\\") | .workspace_id\" workspaces.json)\n\n\
       # Replace template name into JSON\nsed -i -e 's,'\"${WORKSPACE_NAME},${WORKSPACE_NAME}_HOMOL\"\
-      ',' export.json\necho \"Target workspace ID is $TARGET_WORKSPACE_ID\"\necho\
-      \ \"Importing workspace $TARGET_WORKSPACE_ID...\"\n    \ncurl -H \"Content-Type:\
-      \ application/json\" -X POST -d @export.json -u \"apikey\":\"$API_KEY_HOM\"\
-      \ \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
+      ',' export.json\nif [[ $TARGET_WORKSPACE_ID ]]\nthen\necho \"Target workspace\
+      \ ID is $TARGET_WORKSPACE_ID\"\necho \"Updating workspace $TARGET_WORKSPACE_ID...\"\
+      \nelse\necho \"No target workspace found.\"\necho \"Creating workspace ${WORKSPACE_NAME}_HOMOL\
+      \ ...\"\nfi\n    \ncurl -H \"Content-Type: application/json\" -X POST -d @export.json\
+      \ -u \"apikey\":\"$API_KEY_HOM\" \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
     test_type: simple
 - name: Prod
   inputs:
@@ -107,15 +108,29 @@ stages:
   - name: Deploy
     type: tester
     curatedDockerImage: default
-    script: "#!/bin/bash\necho \"Looking for workspace\
-      \ with name ${WORKSPACE_NAME}_PROD at $API_URL\" \ncurl -u \"apikey\":\"$API_KEY_PROD\"\
-      \ \"$API_URL/v1/workspaces?version=2018-09-20\" > workspaces.json\nexport TARGET_WORKSPACE_ID=$(jq\
-      \ -r \".workspaces[] | select(.name == \\\"${WORKSPACE_NAME}_PROD\\\") | .workspace_id\"\
-      \ workspaces.json)\n\n# Replace template name into JSON\nsed -i -e 's,'\"${WORKSPACE_NAME},${WORKSPACE_NAME}_PROD\"\
-      ',' export.json\necho \"Target workspace ID is $TARGET_WORKSPACE_ID\"\necho\
-      \ \"Importing workspace $TARGET_WORKSPACE_ID...\"\n    \ncurl -H \"Content-Type:\
-      \ application/json\" -X POST -d @export.json -u \"apikey\":\"$API_KEY_PRD\"\
-      \ \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\""
+    script: "#!/bin/bash\necho \"Looking for workspace with name ${WORKSPACE_NAME}_PROD\
+      \ at $API_URL\" \ncurl -u \"apikey\":\"$API_KEY_PRD\" \"$API_URL/v1/workspaces?version=2018-09-20\"\
+      \ > workspaces.json\nexport TARGET_WORKSPACE_ID=$(jq -r \".workspaces[] | select(.name\
+      \ == \\\"${WORKSPACE_NAME}_PROD\\\") | .workspace_id\" workspaces.json)\n\n\
+      # Replace template name into JSON\nsed -i -e 's,'\"${WORKSPACE_NAME},${WORKSPACE_NAME}_PROD\"\
+      ',' export.json\nif [[ $TARGET_WORKSPACE_ID ]]\nthen\necho \"Target workspace\
+      \ ID is $TARGET_WORKSPACE_ID\"\necho \"Updating workspace $TARGET_WORKSPACE_ID...\"\
+      \nelse\necho \"No target workspace found.\"\necho \"Creating workspace ${WORKSPACE_NAME}_PROD\
+      \ ...\"\nfi\n    \ncurl -H \"Content-Type: application/json\" -X POST -d @export.json\
+      \ -u \"apikey\":\"$API_KEY_PRD\" \"$API_URL/v1/workspaces/$TARGET_WORKSPACE_ID?version=2018-09-20\"\
+      \n\nif [[ $API_URL_REG2 ]] && [[ $API_KEY_PRD_REG2 ]]\nthen\necho \"Starting\
+      \ Region 2 replication...\"\necho \"Looking for workspace with name ${WORKSPACE_NAME}_PROD\
+      \ at $API_URL_REG2\" \ncurl -u \"apikey\":\"$API_KEY_PRD_REG2\" \"$API_URL_REG2/v1/workspaces?version=2018-09-20\"\
+      \ > workspaces.json\nexport TARGET_WORKSPACE_ID_REG2=$(jq -r \".workspaces[]\
+      \ | select(.name == \\\"${WORKSPACE_NAME}_PROD\\\") | .workspace_id\" workspaces.json)\n\
+      if [[ $TARGET_WORKSPACE_ID_REG2 ]]\nthen\necho \"Target workspace ID is $TARGET_WORKSPACE_ID_REG2\"\
+      \necho \"Updating workspace $TARGET_WORKSPACE_ID_REG2...\"\nelse\necho \"No\
+      \ target workspace found.\"\necho \"Creating workspace ${WORKSPACE_NAME}_PROD\
+      \ ...\"\nfi\ncurl -H \"Content-Type: application/json\" -X POST -d @export.json\
+      \ -u \"apikey\":\"$API_KEY_PRD_REG2\" \"$API_URL_REG2/v1/workspaces/$TARGET_WORKSPACE_ID_REG2?version=2018-09-20\"\
+      \nelse\necho \"Replication to Region 2 is disabled.\"\necho \"To enable Region\
+      \ 2 replication, create another toolchain filling the necessary information:\"\
+      \necho \"https://github.com/renatojen/assistant-promotion-toolchain\"\nfi\n"
     test_type: simple
 hooks:
 - enabled: true
