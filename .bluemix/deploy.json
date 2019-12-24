@@ -76,7 +76,7 @@
             "type": "string",
             "readonly": false,
             "title": "URL da API do Watson Assistant (REGIÃO 2)",
-            "key": "api-url"
+            "key": "api-url-reg2"
         },
         {
             "type": "password",
